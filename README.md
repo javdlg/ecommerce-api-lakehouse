@@ -12,19 +12,6 @@ The primary focus of this repository is **robust API integration and data ingest
 * **Serverless Architecture Ready:** Codebase structured to be seamlessly deployed as AWS Lambda functions.
 * **Medallion Architecture:** Designed to process data through Bronze (raw JSON), Silver (flattened/cleaned), and Gold (analytical schemas) layers using S3 and Athena.
 
-## 🗂️ Project Structure
-\`\`\`text
-ecommerce_api_lakehouse/
-├── src/
-│   ├── api_client/          # Core API interaction logic (MeliClient)
-│   ├── extract/             # Ingestion scripts
-│   ├── transform/           # JSON flattening and data cleaning
-│   └── utils/               # Shared AWS/config helpers
-├── tests/                   # Unit tests
-├── requirements.txt
-└── README.md
-\`\`\`
-
 ## 🛠️ Tech Stack
 * **Language:** Python 3.x
 * **Libraries:** `requests`, `pandas`, `boto3` (AWS SDK), `logging`
