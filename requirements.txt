@@ -1,0 +1,12 @@
+# --- API Client & HTTP Requests ---
+requests>=2.31.0
+
+# --- Data Manipulation ---
+pandas>=2.0.0
+pyarrow>=12.0.0
+
+# --- AWS SDK (Phase 2 Preparation) ---
+boto3>=1.28.0
+
+# --- Environment Variables Management ---
+python-dotenv>=1.0.0
