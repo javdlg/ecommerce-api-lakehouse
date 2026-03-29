@@ -18,6 +18,14 @@ class MeliClient:
         self.base_url = "https://api.mercadolibre.com"
         self.session = requests.Session()
 
+        # Headers to prevent for anti-bot blockers and to identify our client
+        self.session.headers.update(
+            {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                "Accept": "application/json",
+            }
+        )
+
         # Example of how you can load a token if the endpoint deserves it in the future
         # self.token = os.getenv("MELI_ACCESS_TOKEN", "")
         # self.session.headers.update({"Authorization": f"Bearer {self.token}"})
