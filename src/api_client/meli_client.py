@@ -2,6 +2,10 @@ import os
 import time
 import logging
 import requests
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Basic logging config to view what the code does
 logging.basicConfig(
@@ -18,9 +22,18 @@ class MeliClient:
         self.base_url = "https://api.mercadolibre.com"
         self.session = requests.Session()
 
-        # Headers to prevent for anti-bot blockers and to identify our client
+        # Load the access token from environment variable
+        self.access_token = os.getenv("MELI_ACCESS_TOKEN")
+
+        if not self.access_token:
+            logging.error(
+                "ERROR: MELI_ACCESS_TOKEN not found in environment variables."
+            )
+
+        # Header configuration with the token and other necessary headers for MercadoLibre API
         self.session.headers.update(
             {
+                "Authorization": f"Bearer {self.access_token}",
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
                 "Accept": "application/json",
             }
@@ -108,3 +121,11 @@ class MeliClient:
             # We respect the API making a little pause between pages
             time.sleep(0.5)
         return all_items[:max_items]
+
+    def get_item(self, item_id):
+        """
+        Fetches a single product by its ID.
+        """
+        endpoint = f"products/{item_id}"
+        logging.info(f"Fetching data for product: {item_id}")
+        return self._make_request(endpoint)

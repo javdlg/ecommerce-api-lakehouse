@@ -1,38 +1,40 @@
 import json
-import os
-import sys
-
-# We add the base path so that Python find our packages
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
+import logging
 from src.api_client.meli_client import MeliClient
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 def main():
-    print("Starting the connection test to the MercadoLibre API...")
+    print("Initializing direct extraction by Item ID...")
     client = MeliClient()
 
-    # Category MLA1055: Smartphones
-    category_id = "MLA1055"
+    # List of real cell phone IDs on Mercado Libre Argentina (MLA)
+    # You can replace these with any valid item IDs from the MLA marketplace
+    item_ids = [
+        "MLA63468990",
+        "MLA2071412843",
+        "MLA2060138354",
+    ]
 
-    # We extract a little batch of items (10) to test the connection and structure
-    print(f"Fetching items from category {category_id}...")
-    items = client.get_items_by_category(category_id, max_items=10)
+    collected_data = []
 
-    if items:
-        print(f"Successfully fetched {len(items)} items from category {category_id}.")
+    for item_id in item_ids:
+        data = client.get_item(item_id)
+        if data:
+            collected_data.append(data)
+        else:
+            logging.warning(f"No data found for item ID: {item_id}")
 
-        # We save the raw response (simulated bronze layer) in a local JSON file
+    if collected_data:
         output_file = "sample_items.json"
         with open(output_file, "w", encoding="utf-8") as f:
-            json.dump(items, f, ensure_ascii=False, indent=4)
-
-        print(f"\nData saved in the file: '{output_file}'")
-        print(
-            "Review this file to analyze the complexity of the nested JSON structure."
-        )
+            json.dump(collected_data, f, indent=4, ensure_ascii=False)
+        print(f"\n¡Éxit! {len(collected_data)} products saved in {output_file}")
     else:
-        print("Failed to fetch the data. Please check the console for any error.")
+        print("\nFailed to extract any data. Check the logs.")
 
 
 if __name__ == "__main__":
