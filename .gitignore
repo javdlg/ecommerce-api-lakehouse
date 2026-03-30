@@ -5,3 +5,4 @@ venv/
 *.json
 *.csv
 *.parquet
+JOURNAL.md

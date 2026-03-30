@@ -65,17 +65,19 @@ def main():
     # 3. The worker processes the list
     print(f"Extracting details for {len(product_ids)} products...")
 
-    # MODIFY ALL THE CODE BELOW LATER #
+    for i, product_id in enumerate(product_ids, start=1):
+        logging.info(f"[{i}/{len(product_ids)}] Downloading data from: {product_id}")
+        data = client.get_item(product_id)
 
-    for item_id in item_ids:
-        data = client.get_item(item_id)
         if data:
             collected_data.append(data)
-        else:
-            logging.warning(f"No data found for item ID: {item_id}")
 
+        # Strategic pause to avoid hitting rate limits
+        time.sleep(1)
+
+    # 4. Saving in the Bronze layer (as JSON file)
     if collected_data:
-        output_file = "sample_items.json"
+        output_file = "bronze_layer_smartphones.json"
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(collected_data, f, indent=4, ensure_ascii=False)
         print(f"\n¡Éxit! {len(collected_data)} products saved in {output_file}")
