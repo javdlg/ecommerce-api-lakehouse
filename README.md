@@ -13,8 +13,8 @@ The primary focus of this repository is **robust API integration and data ingest
 * **Medallion Architecture:** Designed to process data through Bronze (raw JSON), Silver (flattened/cleaned), and Gold (analytical schemas) layers using S3 and Athena.
 
 ## 📝 Implementation Details
-* **`src/api_client/meli_client.py`**: Core API client class (`MeliClient`). Implements `requests.Session()` for connection pooling, environment variable loading for secure authentication (`MELI_ACCESS_TOKEN`), and a resilient `_make_request` method with exponential backoff for handling rate limits (429) and server anomalies (500+). Also features built-in pagination handling (`get_items_by_category`).
-* **`src/extract/fetch_items.py`**: Batch extraction pipeline script targeting the Bronze Layer. Seeds product IDs from a local text file (`target_products.txt`), orchestrates deep product extractions with strategic rate-limiting pauses (`time.sleep`), and consolidates raw JSON payloads into `bronze_layer_smartphones.json`.
+* **`src/api_client/meli_client.py`**: Core API client class (`MeliClient`). Implements `requests.Session()` for connection pooling, environment variable loading for secure authentication (`MELI_ACCESS_TOKEN`), and a resilient `_make_request` method with exponential backoff for handling rate limits (429) and server anomalies (500+). Includes built-in pagination handling (`get_items_by_category`) and a highly efficient `get_items_batch` method that leverages the MercadoLibre Multiget API to fetch up to 20 items per request.
+* **`src/extract/fetch_items.py`**: Batch extraction pipeline script targeting the Bronze Layer. Seeds product IDs from a local text file (`target_products.txt`) and orchestrates bulk product extractions using the client's multiget capabilities. Implements chunked processing (`BATCH_SIZE=20`) with strategic rate-limiting pauses, and consolidates raw JSON payloads into dynamically timestamped files (e.g., `bronze_layer_smartphones_YYYYMMDD_HHMMSS.json`).
 
 ## 🛠️ Tech Stack
 * **Language:** Python 3.x
