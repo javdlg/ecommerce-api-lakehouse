@@ -12,6 +12,10 @@ The primary focus of this repository is **robust API integration and data ingest
 * **Serverless Architecture Ready:** Codebase structured to be seamlessly deployed as AWS Lambda functions.
 * **Medallion Architecture:** Designed to process data through Bronze (raw JSON), Silver (flattened/cleaned), and Gold (analytical schemas) layers using S3 and Athena.
 
+## 📝 Implementation Details
+* **`src/api_client/meli_client.py`**: Core API client class (`MeliClient`). Implements `requests.Session()` for connection pooling, environment variable loading for secure authentication (`MELI_ACCESS_TOKEN`), and a resilient `_make_request` method with exponential backoff for handling rate limits (429) and server anomalies (500+). Also features built-in pagination handling (`get_items_by_category`).
+* **`src/extract/fetch_items.py`**: Batch extraction pipeline script targeting the Bronze Layer. Seeds product IDs from a local text file (`target_products.txt`), orchestrates deep product extractions with strategic rate-limiting pauses (`time.sleep`), and consolidates raw JSON payloads into `bronze_layer_smartphones.json`.
+
 ## 🛠️ Tech Stack
 * **Language:** Python 3.x
 * **Libraries:** `requests`, `pandas`, `boto3` (AWS SDK), `logging`
