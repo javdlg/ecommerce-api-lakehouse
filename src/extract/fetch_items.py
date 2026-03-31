@@ -7,7 +7,6 @@ from src.api_client.meli_client import MeliClient
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
-BATCH_SIZE = 20
 REQUEST_DELAY = 1
 
 def get_product_ids_from_file(filepath="target_products.txt"):
@@ -15,37 +14,34 @@ def get_product_ids_from_file(filepath="target_products.txt"):
     Phase 1: Reads the IDs provided by the business team from a local text file.
     """
     if not os.path.exists(filepath):
-        logging.error(f"No se encontró el archivo '{filepath}'.")
+        logging.error(f"File '{filepath}' not found.")
         return []
         
     with open(filepath, "r", encoding="utf-8") as f:
         product_ids = [line.strip() for line in f if line.strip()]
         
-    logging.info(f"Se cargaron {len(product_ids)} IDs desde {filepath}")
+    logging.info(f"Loaded {len(product_ids)} IDs from {filepath}")
     return product_ids
 
-def fetch_items_in_batches(client, product_ids):
+def fetch_items_one_by_one(client, product_ids):
     """
-    Phase 2: Uses Multiget to extract 20 products per request.
+    Phase 2: Fetches items one by one using the Multiget endpoint.
+    MercadoLibre not support Multiget for /products, so we need to fetch items one by one.
     """
     collected_data = []
-    total_batches = (len(product_ids) + BATCH_SIZE - 1) // BATCH_SIZE
 
-    for batch_num, i in enumerate(range(0, len(product_ids), BATCH_SIZE), 1):
-        batch = product_ids[i : i + BATCH_SIZE]
-        logging.info(f"[Batch {batch_num}/{total_batches}] Downloading {len(batch)} items...")
+    for i, prod_id in enumerate(product_ids, 1):    
+        logging.info(f"[{i}/{len(product_ids)}] Fetching {prod_id}...")
 
-        # Call the super efficient method of your new client
-        response = client.get_items_batch(batch)
+        # We use trhe generic method aiming to the catalog
+        data = client.get(f"products/{prod_id}")
 
-        if response:
-            # The multiget API returns a list of objects {code: 200, body: {...}}
-            for entry in response:
-                if entry.get("code") == 200:
-                    collected_data.append(entry.get("body"))
-                else:
-                    logging.warning(f"Error in a batch item: {entry.get('code')}")
+        if data:
+            collected_data.append(data)
+        else:
+            logging.warning(f"Error fetching data for ID: {prod_id}")
 
+        # Delay to avoid overwhelming the API
         time.sleep(REQUEST_DELAY)
 
     return collected_data

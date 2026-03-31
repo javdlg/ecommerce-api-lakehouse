@@ -95,9 +95,7 @@ class MeliClient:
     def get_items_batch(self, item_ids):
         """
         Fetches up to 20 items in a single request using
-        the /items?ids= batch endpoint — much more efficient
-        than one request per item.
-        Returns a list of {code, body} objects.
+        the /products/multiget endpoint.
         """
         if not item_ids:
             return []
@@ -111,7 +109,7 @@ class MeliClient:
             )
 
         ids_str = ",".join(batch)
-        endpoint = "items"
+        endpoint = "products/multiget"
         logging.info(f"Fetching batch of {len(batch)} items...")
         return self._make_request(endpoint, params={"ids": ids_str})
 
