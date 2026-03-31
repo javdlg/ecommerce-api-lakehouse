@@ -1,89 +1,67 @@
+import os
 import time
 import json
 import logging
-import requests
 from src.api_client.meli_client import MeliClient
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
-
-def get_product_ids_from_search(category="MLA1055", limit=50):
+def get_product_ids_from_file(filepath="target_products.txt"):
     """
-    The scout: This function uses the public API (without token) to evade the firrewall and collect the IDs from the products catalog
+    Simulates the seeding of product IDs by reading them from a local text file.
     """
-    url = f"https://api.mercadolibre.com/sites/MLA/search?category={category}&limit={limit}"
-
-    # We use a browser user-agent, but without the authentication: Bearer
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    }
-
-    logging.info(f"Tracking products in category {category}")
-    response = requests.get(url, headers=headers)
-
-    if response.status_code != 200:
-        logging.error(
-            f"Failed to track products. HTTP {response.status_code}: {response.text}"
-        )
+    if not os.path.exists(filepath):
+        logging.error(f"The file '{filepath}' was not found. Create it first!")
         return []
 
-    data = response.json()
-    results = data.get("results", [])
+    with open(filepath, "r", encoding="utf-8") as f:
+        # Read the lines, remove white spaces and skip empty lines
+        product_ids = [line.strip() for line in f if line.strip()]
 
-    product_ids = []
-    for items in results:
-        # We search for the specific catalog ID (Product), no the item ID (Publication)
-        cat_id = items.get("catalog_product_id")
-
-        # We filter to ensure that exists and is not duplicated
-        if cat_id and cat_id not in product_ids:
-            product_ids.append(cat_id)
-
-    logging.info(
-        f"Found {len(product_ids)} unique and valid product IDs in category {category}"
-    )
+    logging.info(f"Loaded {len(product_ids)} IDs from {filepath}")
     return product_ids
 
 
 def main():
-    print("Initializing batch extraction - Bronze layer...")
-    client = MeliClient()
+    print("Starting Enrichment Pipeline - Bronze Layer...")
 
-    # 1. The scout goes to find the product IDs in the category (first with 50)
-    product_ids = get_product_ids_from_search(limit=50)
+    # 1. Read the seed IDs from our local file
+    product_ids = get_product_ids_from_file()
 
     if not product_ids:
-        logging.error("No product IDs found. Exiting.")
+        logging.error("No IDs to process. Aborting the batch.")
         return
 
-    # 2. We initialize our authenticated client to fetch the item details
+    # 2. Initialize our authenticated client
     client = MeliClient()
     collected_data = []
 
-    # 3. The worker processes the list
-    print(f"Extracting details for {len(product_ids)} products...")
+    # 3. The Worker processes the list iterating over the catalog
+    print(
+        f"\nStarting deep extraction in Meli API for {len(product_ids)} products..."
+    )
 
-    for i, product_id in enumerate(product_ids, start=1):
+    for i, product_id in enumerate(product_ids, 1):
         logging.info(f"[{i}/{len(product_ids)}] Downloading data from: {product_id}")
         data = client.get_item(product_id)
 
         if data:
             collected_data.append(data)
 
-        # Strategic pause to avoid hitting rate limits
+        # Strategic pause to avoid saturating the API
         time.sleep(1)
 
-    # 4. Saving in the Bronze layer (as JSON file)
+    # 4. Save in the Bronze Layer
     if collected_data:
         output_file = "bronze_layer_smartphones.json"
         with open(output_file, "w", encoding="utf-8") as f:
             json.dump(collected_data, f, indent=4, ensure_ascii=False)
-        print(f"\n¡Éxit! {len(collected_data)} products saved in {output_file}")
+        print(f"\nBatch completed successfully!")
+        print(f"Saved {len(collected_data)} raw records in {output_file}")
     else:
-        print("\nFailed to extract any data. Check the logs.")
-
+        print("\nExtraction failed. Check the logs.")
 
 if __name__ == "__main__":
     main()
