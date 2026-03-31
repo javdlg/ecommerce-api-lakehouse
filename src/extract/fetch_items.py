@@ -53,11 +53,10 @@ def main():
     if not product_ids:
         return
 
-    # Use the new, robust client with Session
     client = MeliClient()
     
-    print(f"\nStarting batch extraction for {len(product_ids)} products...")
-    collected_data = fetch_items_in_batches(client, product_ids)
+    print(f"\nStarting catalog extraction for {len(product_ids)} products...")
+    collected_data = fetch_items_one_by_one(client, product_ids)
             
     if collected_data:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
