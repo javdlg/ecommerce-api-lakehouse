@@ -72,7 +72,7 @@ def main():
 
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_file = os.path.join(
-            output_dir, f"bronze_layer_smartphones_{timestamp}.json"
+            output_dir, f"bronze_smartphones_data_{timestamp}.json"
         )
 
         with open(output_file, "w", encoding="utf-8") as f:
