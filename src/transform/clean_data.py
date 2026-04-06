@@ -36,6 +36,7 @@ def get_latest_bronze_file(directory):
 
     return latest_file
 
+
 def extract_attributes(attributes_list):
     """
     Mercado Libre hides the specs inside a list of dictionaries.
@@ -44,17 +45,18 @@ def extract_attributes(attributes_list):
     extracted = {}
     if not isinstance(attributes_list, list):
         return extracted
-    
+
     for attr in attributes_list:
         # We use the 'id' (e.g., 'BATTERY_CAPACITY') as the column name
         attr_id = attr.get(id)
         # And 'value_name' (e.g., '5000 mAh') as the value
-        attr_value = attr.get('value_name')
+        attr_value = attr.get("value_name")
 
         if attr_id:
             extracted[attr_id] = attr_value
-    
+
     return extracted
+
 
 def process_bronze_data(filepath):
     """
@@ -72,7 +74,7 @@ def process_bronze_data(filepath):
             "name": item.get("name"),
             "status": item.get("status"),
             "domain_id": item.get("domain_id"),
-            "date_created": item.get("date_created")
+            "date_created": item.get("date_created"),
         }
 
         # 2. Extract and flatten the attributes
@@ -81,7 +83,42 @@ def process_bronze_data(filepath):
         record.update(attributes_dict)
         processed_records.append(record)
 
-    #Create the DataFrame
+    # Create the DataFrame
     df = pd.DataFrame(processed_records)
     return df
 
+
+def clean_and_format_dataframe(df):
+    """
+    Applies silver layer transformations: filtering, casting, and dropping nulls.
+    """
+    # Select only the columns we actually care about for analytics
+    # Note: These columns depend on the attributes ML returns
+    columns_to_keep = [
+        "product_id",
+        "name",
+        "status",
+        "BRAND",
+        "LINE",
+        "MODEL",
+        "INTERNAL_MEM",
+        "BATTERY_CAPACITY",
+    ]
+
+    # Keep only columns that actually exists in the DataFrame to avoid key errors
+    existing_columns = [col for col in columns_to_keep if col in df.columns]
+    df_clean = df[existing_columns].copy()
+
+    # Standarize column names (lowercase)
+    df_clean.columns = [col.lower() for col in df_clean.columns]
+
+    # Convert dates to datetime objects
+    if "date_created" in df.columns:
+        df_clean["date_created"] = pd.to_datetime(
+            df_clean["date_created"]
+        ).dt.tz_localize(None)
+
+    # Fill missing values with a standard label
+    df_clean = df_clean.fillna("N/A")
+
+    return df_clean

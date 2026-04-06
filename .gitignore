@@ -7,3 +7,4 @@ venv/
 *.parquet
 JOURNAL.md
 target_products.txt
+data/
