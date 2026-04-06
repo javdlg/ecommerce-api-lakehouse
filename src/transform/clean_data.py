@@ -21,7 +21,7 @@ SILVER_OUTPUT = os.path.join(SILVER_DIR, "silver_smartphone_data.parquet")
 
 def get_latest_bronze_file(directory):
     """
-    finds the most recently created JSON file from the bronze layer directory.
+    Finds the most recently created JSON file from the bronze layer directory.
     """
     search_pattern = os.path.join(directory, "bronze_smartphones_data_*.json")
     files = glob.glob(search_pattern)
@@ -29,3 +29,59 @@ def get_latest_bronze_file(directory):
     if not files:
         logging.error(f"No bronze files found in {directory}")
         return None
+
+    # Get the most recent file
+    latest_file = max(files, key=os.path.getctime)
+    logging.info(f"Found latest bronze file: {latest_file}")
+
+    return latest_file
+
+def extract_attributes(attributes_list):
+    """
+    Mercado Libre hides the specs inside a list of dictionaries.
+    This function flattens that list into a simple key-value dictionary.
+    """
+    extracted = {}
+    if not isinstance(attributes_list, list):
+        return extracted
+    
+    for attr in attributes_list:
+        # We use the 'id' (e.g., 'BATTERY_CAPACITY') as the column name
+        attr_id = attr.get(id)
+        # And 'value_name' (e.g., '5000 mAh') as the value
+        attr_value = attr.get('value_name')
+
+        if attr_id:
+            extracted[attr_id] = attr_value
+    
+    return extracted
+
+def process_bronze_data(filepath):
+    """
+    Loads the JSON, flattens the nested structures, and returns a clean DataFrame.
+    """
+    with open(filepath, "r", encoding="utf-8") as f:
+        raw_data = json.load(f)
+
+    processed_records = []
+
+    for item in raw_data:
+        # 1. Extract base fields
+        record = {
+            "product_id": item.get("id"),
+            "name": item.get("name"),
+            "status": item.get("status"),
+            "domain_id": item.get("domain_id"),
+            "date_created": item.get("date_created")
+        }
+
+        # 2. Extract and flatten the attributes
+        attributes_dict = extract_attributes(item.get("attributes", []))
+        # 3. Merge base fields with flattened attributes
+        record.update(attributes_dict)
+        processed_records.append(record)
+
+    #Create the DataFrame
+    df = pd.DataFrame(processed_records)
+    return df
+
