@@ -23,7 +23,7 @@ def get_latest_bronze_file(directory):
     """
     Finds the most recently created JSON file from the bronze layer directory.
     """
-    search_pattern = os.path.join(directory, "bronze_smartphones_data_*.json")
+    search_pattern = os.path.join(directory, "bronze_layer_smartphones_*.json")
     files = glob.glob(search_pattern)
 
     if not files:
