@@ -122,3 +122,33 @@ def clean_and_format_dataframe(df):
     df_clean = df_clean.fillna("N/A")
 
     return df_clean
+
+
+def main():
+    print("Starting transformation from bronze to silver layer...")
+
+    # 1. Read
+    latest_file = get_latest_bronze_file(BRONZE_DIR)
+    if not latest_file:
+        return
+
+    # 2. Flatten and process
+    logging.info("Loading and flattening JSON data...")
+    df_raw = process_bronze_data(latest_file)
+
+    # 3. Clean and format
+    logging.info("Cleaning and formatting DataFrame...")
+    df_clean = clean_and_format_dataframe(df_raw)
+
+    # 4. Save to Parquet (highly compressed columnar format)
+    logging.info(f"Saving transformed DataFrame to {SILVER_OUTPUT}")
+    df_clean.to_parquet(SILVER_OUTPUT, engine="pyarrow", index=False)
+
+    print("Silver layer transformation complete.")
+    print(f"  Rows processed: {len(df_clean)}")
+    print(f"  Columns created: {len(df_clean.columns)}")
+    print(f"  Preview:\n{df_clean.head(3)}")
+
+
+if __name__ == "__main__":
+    main()
