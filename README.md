@@ -1,5 +1,10 @@
 # E-commerce API Lakehouse 🛒
 
+![Status: Paused](https://img.shields.io/badge/Status-Paused-yellow)
+
+> ⚠️ **Project Status: On Hold**
+> *Active development of this project is currently paused while I focus on other projects and learning milestones. You can review the current progress, architecture, and implemented features documented below. The existing codebase is fully functional.*
+
 ## 📌 Project Overview
 This project implements an end-to-end, serverless Data Lakehouse architecture on AWS, designed to extract, transform, and analyze e-commerce data from the public MercadoLibre API. 
 
@@ -21,7 +26,7 @@ The primary focus of this repository is **robust API integration and data ingest
 * **Libraries:** `requests`, `pandas`, `boto3` (AWS SDK), `logging`
 * **Target Infrastructure (AWS):** S3 (Data Lake), Lambda (Compute), Athena (SQL Engine), EventBridge (Orchestration)
 
-## 🔜 Next Steps / Roadmap
+## 🚧 Next Steps / Roadmap (On Hold)
 - [x] **Phase 1: Robust API Ingestion** - Define architecture and implement a resilient API client with pagination and exponential backoff.
 - [ ] **Phase 2: Infrastructure as Code (IaC)** - Define and provision the AWS Serverless architecture (S3, Lambda, EventBridge) using Terraform.
 - [ ] **Phase 3: Hybrid Data Ingestion** - Complement API data with targeted Web Scraping to extract user Q&A and written reviews.
